@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindiver official</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000000;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            color: #4FC3F7;
+            overflow-x: auto;
+        }
+        
+        .pixel-text {
+            font-family: 'Courier New', monospace;
+            color: #4FC3F7;
+            text-shadow: 0 0 5px #4FC3F7;
+            letter-spacing: 1px;
+        }
+        
+        /* 页面标题 */
+        .page-title {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1000;
+            color: #4FC3F7;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        /* 右上角搜索容器 */
+        .search-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 280px;
+            z-index: 1000;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 3px solid #FFFFFF;
+            background-color: #FFFFFF;
+            outline: none;
+            color: #000000;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+        }
+        
+        .search-box:focus {
+            border-color: #4FC3F7;
+            box-shadow: 0 0 15px #4FC3F7;
+        }
+        
+        /* 状态提示 */
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 14px;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #4FC3F7;
+            display: none;
+            text-align: center;
+        }
+        
+        .status.active {
+            display: block;
+            animation: blink 1s infinite;
+        }
+        
+        .status.redirect {
+            border-color: #00FF00;
+            color: #00FF00;
+        }
+        
+        .status.error {
+            border-color: #FF0000;
+            color: #FF0000;
+        }
+        
+        /* 像素风装饰元素 */
+        .pixel-border {
+            position: fixed;
+            border: 2px solid #4FC3F7;
+            box-shadow: 0 0 10px rgba(79, 195, 247, 0.7);
+        }
+        
+        .border-top-left {
+            top: 15px;
+            left: 15px;
+            width: 60px;
+            height: 60px;
+            border-right: none;
+            border-bottom: none;
+        }
+        
+        .border-top-right {
+            top: 15px;
+            right: 15px;
+            width: 60px;
+            height: 60px;
+            border-left: none;
+            border-bottom: none;
+        }
+        
+        .border-bottom-left {
+            bottom: 15px;
+            left: 15px;
+            width: 60px;
+            height: 60px;
+            border-right: none;
+            border-top: none;
+        }
+        
+        .border-bottom-right {
+            bottom: 15px;
+            right: 15px;
+            width: 60px;
+            height: 60px;
+            border-left: none;
+            border-top: none;
+        }
+        
+        /* 像素网格背景 */
+        .pixel-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(79, 195, 247, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79, 195, 247, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            margin-top: 120px;
+            padding: 0 20px 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Logo区域 */
+        .logo-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo-frame {
+            display: inline-block;
+            border: 3px solid #4FC3F7;
+            padding: 10px;
+            background-color: #000;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.7);
+            margin-bottom: 20px;
+        }
+        
+        .logo-image {
+            max-width: 300px;
+            height: auto;
+            display: block;
+        }
+        
+        /* 导航标签 */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #4FC3F7;
+            padding-bottom: 5px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            margin: 0 10px;
+            background-color: #000;
+            border: 2px solid #4FC3F7;
+            color: #4FC3F7;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .tab:hover {
+            background-color: #4FC3F7;
+            color: #000;
+        }
+        
+        .tab.active {
+            background-color: #4FC3F7;
+            color: #000;
+        }
+        
+        /* 内容区域 */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        /* Products 页面 */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 改为两列 */
+    gap: 30px;
+    margin-top: 20px;
+        }
+        
+        .product-item {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid #4FC3F7;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(79, 195, 247, 0.5);
+    min-height: 400px; /* 根据实际情况调整 */
+    overflow: hidden;
+}
+        
+        .product-image {
+            width: 100%;
+            height: 180px;
+            background-color: #0a0a0a;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4FC3F7;
+            font-size: 14px;
+        }
+        
+        .product-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            color: #4FC3F7;
+        }
+        
+        .product-description {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #88FFFF;
+        }
+        
+        /* Video 页面 */
+        .video-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .video-placeholder {
+            width: 100%;
+            max-width: 800px;
+            height: 450px;
+            background-color: #0a0a0a;
+            margin: 0 auto 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.7);
+        }
+        
+        .video-placeholder-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #4FC3F7;
+        }
+        
+        .video-description {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #88FFFF;
+            text-align: center;
+        }
+        
+        /* Founder 页面 */
+
+.founder-content {
+    display: flex;
+    flex-direction: row; /* 改为行排列 */
+    align-items: flex-start; /* 顶部对齐 */
+    justify-content: space-between; /* 左右分开 */
+    max-width: 1000px; /* 增加最大宽度 */
+    margin: 20px auto 0;
+    gap: 40px; /* 左右间距 */
+}
+
+.founder-left {
+    flex: 0 0 45%; /* 左边固定45%宽度 */
+}
+
+.founder-right {
+    flex: 0 0 50%; /* 右边固定50%宽度 */
+    text-align: left; /* 文字左对齐 */
+}
+        
+.founder-image {
+    width: 100%;
+    max-width: 100%; /* 改为100%以适应容器 */
+    height: 350px; /* 可以调整高度 */
+    background-color: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4FC3F7;
+    font-size: 16px;
+    box-shadow: 0 0 20px rgba(79, 195, 247, 0.7);
+}        
+       .founder-description {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #88FFFF;
+    text-align: left; /* 左对齐 */
+    max-width: 100%; /* 改为100%以适应容器 */
+    margin: 0;
+}
+        
+        /* 页面底部 */
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 14px;
+            color: #4FC3F7;
+            padding: 20px;
+            border-top: 1px solid rgba(79, 195, 247, 0.3);
+        }
+        
+        /* 动画 */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 5px #4FC3F7; }
+            50% { box-shadow: 0 0 15px #4FC3F7; }
+            100% { box-shadow: 0 0 5px #4FC3F7; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .search-container {
+                width: 240px;
+                right: 15px;
+                top: 15px;
+            }
+            
+            .page-title {
+                font-size: 20px;
+                left: 15px;
+                top: 15px;
+            }
+            
+            .tab {
+                padding: 10px 15px;
+                font-size: 16px;
+                margin: 0 5px;
+            }
+            
+            .main-content {
+                margin-top: 100px;
+                padding: 0 15px 30px;
+            }
+            
+            .logo-image {
+                max-width: 250px;
+            }
+            
+            .video-placeholder {
+                height: 300px;
+            }
+        }
+        
+         @media (max-width: 768px) {
+    .founder-content {
+        flex-direction: column; /* 小屏幕改为垂直排列 */
+        gap: 20px;
+    }
+    
+    .founder-left,
+    .founder-right {
+        flex: 0 0 100%; /* 小屏幕各占100%宽度 */
+    }
+}
+
+        @media (max-width: 480px) {
+            .search-container {
+                width: 200px;
+            }
+            
+            .search-box {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+            
+            .page-title {
+                font-size: 18px;
+                left: 10px;
+                top: 10px;
+            }
+            
+            .nav-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 200px;
+                margin-bottom: 10px;
+            }
+            
+            .logo-image {
+                max-width: 200px;
+            }
+            
+            .video-placeholder {
+                height: 200px;
+            }
+            
+            .founder-image {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 像素网格背景 -->
+    <div class="pixel-grid"></div>
+    
+    <!-- 像素边框装饰 -->
+    <div class="pixel-border border-top-left"></div>
+    <div class="pixel-border border-top-right"></div>
+    <div class="pixel-border border-bottom-left"></div>
+    <div class="pixel-border border-bottom-right"></div>
+    
+    <!-- 左上角页面标题 -->
+    <div class="page-title pixel-text">Mindiver official</div>
+    
+    <!-- 右上角搜索容器 -->
+    <div class="search-container">
+        <input type="text" class="search-box pixel-text" id="searchInput" placeholder="输入字母...">
+        <div class="status pixel-text" id="statusMessage"></div>
+    </div>
+    
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <!-- Logo区域 -->
+        <div class="logo-section">
+            <div class="logo-frame">
+                <!-- 插入MDlogo图片 -->
+                <img src="MDlogo.jpg" 
+                     alt="Mindiver Official Logo" 
+                     class="logo-image"
+                     id="mindiverLogo">
+            </div>
+        </div>
+        
+        <!-- 导航标签 -->
+        <div class="nav-tabs">
+            <div class="tab pixel-text active" data-tab="products">Products</div>
+            <div class="tab pixel-text" data-tab="video">Video</div>
+            <div class="tab pixel-text" data-tab="founder">Founder</div>
+        </div>
+        
+        <!-- Products 内容 -->
+        <div id="products" class="content-section active">
+            <div class="products-grid">
+                <div class="product-item">
+                    <div class="product-image">
+                        <!-- 在这里插入产品1图片 -->
+                        <img src="oldtypephone.png" alt="oldtypephone" class="logo-image">
+                    </div>
+                    <div class="product-title">Old Fashion Phone</div>
+                    <div class="product-description">
+                        在赛博时代，作为纪念品推出的旧时代翻盖手机。
+                    </div>
+                </div>
+                
+                <div class="product-item">
+                    <div class="product-image">
+                        <!-- 在这里插入产品2图片 -->
+                        <img src="danaojichuangred.png" alt="danaojichuangred" class="logo-image">
+                    </div>
+                    <div class="product-title">NeuralLink1</div>
+                    <div class="product-description">
+                        NeuralLink 脑机接口基座，军用级生物兼容材质，微创植入，实时双向神经信号收发（支持义体/外骨骼操控），本地离线运算核心，保障基础生理功能。让你重获新生！
+                    </div>
+                </div>
+                
+                <div class="product-item">
+                    <div class="product-image">
+                        <!-- 在这里插入产品3图片 -->
+                        <img src="naojismall.png" alt="naojismall" class="logo-image">
+                    </div>
+                    <div class="product-title">NeuralLink2</div>
+                    <div class="product-description">
+                        和NeuralLink一样，但是更加便捷！
+                    </div>
+                </div>
+                
+                <div class="product-item">
+                    <div class="product-image">
+                        <!-- 在这里插入产品4图片 -->
+                       <img src="MD2G.jpg" alt="MD2G" class="logo-image">
+                    </div>
+                    <div class="product-title">MD2G</div>
+                    <div class="product-description">
+                        MD2G 认知增强芯片（可插拔），订阅制知识库接入，蜂巢网络社交接口。记得和NeuralLink配套使用！
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Video 内容 -->
+        <div id="video" class="content-section">
+            <div class="video-container">
+                <video controls width="100%">
+  <source src="MD2GVideo.mp4" type="video/mp4">
+</video>
+                    <div class="video-placeholder-text">MD2G-Leader of the times</div>
+                    <p>2047$</p>
+                </div>
+                <div class="video-description">
+                    <p>植入一枚芯片，接入全球最大的意识深潜网络。</p>
+                    <p style="margin-top: 15px;">视频时长：30s | 制作时间：2077年 | 语言：英文</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Founder 内容 -->
+<div id="founder" class="content-section">
+    <div class="founder-content">
+        <div class="founder-left">
+            <div class="founder-image">
+                <!-- 在这里插入创始人图片 -->
+                Not found
+            </div>
+        </div>
+        <div class="founder-right">
+            <div class="founder-description">
+                <p>我们的神经接口提供了前所未有的清晰度。我们能精确测量一个人的认知输出、解决问题的创造力、抗压能力。‘神经优绩’系统不是判决，而是解放。它解放了那些曾经因僵化体系而被埋没的真正人才。在Mindiver的网络里，一个在贫民窟的天才少年，其思维敏捷度可以瞬间被识别，并因此获得与我们顶级工程师同等的资源和尊重。这才是真正的平等主义！ 
+我们的使命是坚定不移的：加速人类的进化。我们不能让情感上的优柔寡断，去怜悯那些生锈的零件，从而让整台人类机器慢下来。未来属于那些选择进化的人。而Mindiver，就是他们的发射台。</p>
+                <!-- 其他文字内容 -->
+            </div>
+        </div>
+    </div>
+</div>
+        
+        <!-- 页面底部 -->
+        <div class="footer pixel-text">
+            <p>Mindiver Official © 2077 | 超越脑壳，或者被时代碾碎。</p>
+        </div>
+    </div>
+
+    <script>
+        // 定义触发跳转的关键词和对应的跳转URL
+        const triggerKeywords = {
+            "Order": ""C:\Users\lenovo\Desktop\md\订购网页.html"",
+            "go": "https://www.wikipedia.org",
+            "search": "https://www.google.com",
+            "hello": "https://www.greetings.com",
+            "test": "https://www.w3schools.com",
+            "demo": "https://www.demo.com",
+            "jump": "https://www.redirect-example.com"
+        };
+        
+        // 获取DOM元素
+        const searchInput = document.getElementById('searchInput');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        // 检查输入是否为英文字母
+        function isEnglishLetter(char) {
+            return /^[A-Za-z]$/.test(char);
+        }
+        
+        // 过滤非英文字母字符
+        function filterEnglishLetters(input) {
+            return input.split('').filter(char => isEnglishLetter(char) || char === ' ').join('');
+        }
+        
+        // 显示状态信息
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status pixel-text ${type} active`;
+            
+            // 3秒后自动隐藏状态信息（除非是跳转倒计时）
+            if (type !== 'redirect') {
+                setTimeout(() => {
+                    statusMessage.classList.remove('active');
+                }, 3000);
+            }
+        }
+        
+        // 处理页面跳转
+        let redirectTimer = null;
+        let redirectCountdown = 3;
+        
+        function redirectToPage(url, keyword) {
+            // 清除任何现有的重定向计时器
+            if (redirectTimer) {
+                clearInterval(redirectTimer);
+            }
+            
+            // 显示跳转倒计时
+            redirectCountdown = 3;
+            showStatus(`"${keyword}" → ${redirectCountdown}s 跳转`, 'redirect');
+            
+            // 添加脉冲动画到搜索框
+            searchInput.style.animation = "pulse 0.5s infinite";
+            
+            // 更新倒计时
+            redirectTimer = setInterval(() => {
+                redirectCountdown--;
+                
+                if (redirectCountdown <= 0) {
+                    // 清除计时器并执行跳转
+                    clearInterval(redirectTimer);
+                    searchInput.style.animation = "";
+                    showStatus(`跳转中...`, 'redirect');
+                    
+                    // 实际跳转（新标签页打开）
+                    setTimeout(() => {
+                        window.open(url, '_blank');
+                        // 重置输入框
+                        searchInput.value = '';
+                        statusMessage.classList.remove('active');
+                    }, 500);
+                } else {
+                    // 更新倒计时显示
+                    statusMessage.textContent = `"${keyword}" → ${redirectCountdown}s 跳转`;
+                }
+            }, 1000);
+        }
+        
+        // 取消跳转
+        function cancelRedirect() {
+            if (redirectTimer) {
+                clearInterval(redirectTimer);
+                redirectTimer = null;
+                searchInput.style.animation = "";
+                showStatus('跳转取消', 'error');
+                searchInput.value = '';
+            }
+        }
+        
+        // 检查输入是否包含触发关键词
+        function checkForTriggerKeywords(input) {
+            // 将输入转换为小写以便比较
+            const lowerInput = input.toLowerCase().trim();
+            
+            // 检查是否匹配任何触发关键词
+            for (const keyword in triggerKeywords) {
+                // 精确匹配关键词（忽略大小写）
+                if (lowerInput === keyword.toLowerCase()) {
+                    return { found: true, keyword: keyword, url: triggerKeywords[keyword] };
+                }
+            }
+            
+            return { found: false };
+        }
+        
+        // 输入事件监听
+        searchInput.addEventListener('input', function(e) {
+            // 过滤非英文字母字符
+            const filteredValue = filterEnglishLetters(this.value);
+            
+            // 如果过滤后的值与原始值不同，则更新输入框并显示提示
+            if (filteredValue !== this.value) {
+                this.value = filteredValue;
+                showStatus('仅接受英文字母 (A-Z, a-z)', 'error');
+                
+                // 添加红色边框效果
+                this.style.borderColor = '#FF0000';
+                setTimeout(() => {
+                    if (this.value === filteredValue) {
+                        this.style.borderColor = '#FFFFFF';
+                    }
+                }, 500);
+            }
+            
+            // 检查是否取消跳转（当用户开始输入时）
+            if (redirectTimer && filteredValue.length > 0) {
+                cancelRedirect();
+            }
+            
+            // 检查是否包含触发关键词
+            if (filteredValue.length > 0) {
+                const result = checkForTriggerKeywords(filteredValue);
+                if (result.found) {
+                    redirectToPage(result.url, result.keyword);
+                }
+            }
+        });
+        
+        // 按键事件监听，防止输入非字母字符
+        searchInput.addEventListener('keydown', function(e) {
+            // 允许功能键（退格、删除、方向键等）
+            if (e.key.length === 1 && !isEnglishLetter(e.key) && e.key !== ' ') {
+                e.preventDefault();
+                showStatus('仅接受英文字母', 'error');
+                
+                // 添加红色边框效果
+                this.style.borderColor = '#FF0000';
+                setTimeout(() => {
+                    this.style.borderColor = '#FFFFFF';
+                }, 500);
+            }
+        });
+        
+        // 点击输入框时取消跳转
+        searchInput.addEventListener('focus', function() {
+            if (redirectTimer) {
+                cancelRedirect();
+            }
+            this.style.borderColor = '#4FC3F7';
+        });
+        
+        searchInput.addEventListener('blur', function() {
+            this.style.borderColor = '#FFFFFF';
+        });
+        
+        // 初始提示
+        setTimeout(() => {
+            showStatus('只接受英文字母输入，数字由键盘下方对应的字母大写代替，如‘Q’对应‘1’', 'redirect');
+        }, 1000);
+        
+        // 标签页切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab');
+            const contentSections = document.querySelectorAll('.content-section');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 移除所有标签的active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // 隐藏所有内容区域
+                    contentSections.forEach(section => section.classList.remove('active'));
+                    
+                    // 激活当前标签
+                    this.classList.add('active');
+                    // 显示对应内容区域
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
